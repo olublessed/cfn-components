@@ -1,0 +1,80 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: 'Random String Generator'
+
+Resources:
+
+  LambdaExecutionRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+            - lambda.amazonaws.com
+          Action:
+          - sts:AssumeRole
+      ManagedPolicyArns:
+        - 'arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole'
+
+  GenerateRandomStringFunction:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      Handler: index.lambda_handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Code:
+        ZipFile: !Sub |
+          import boto3
+          import httplib
+          import urlparse
+          import json
+          import random
+          import string
+          DEFAULT_PWD_LENGTH=20
+          def send_response(request, response, status=None, reason=None):
+              if 'ResponseURL' in request and request['ResponseURL']:
+                  url = urlparse.urlparse(request['ResponseURL'])
+                  body = json.dumps(response)
+                  https = httplib.HTTPSConnection(url.hostname)
+                  https.request('PUT', url.path+'?'+url.query, body)
+              return response
+          def lambda_handler(event, context):
+              response = {
+                  'StackId': event['StackId'],
+                  'RequestId': event['RequestId'],
+                  'PhysicalResourceId': 'GeneratePasswordFunction',
+                  'LogicalResourceId': event['LogicalResourceId'],
+                  'Status': 'SUCCESS'
+              }
+              pwd_length = DEFAULT_PWD_LENGTH
+              try:
+                  pwd_length = int(event['ResourceProperties']['Length'])
+              except:
+                  print 'using default length of ' + str(DEFAULT_PWD_LENGTH)
+              valid_characters = string.ascii_letters+string.digits
+              pwd = ''.join(random.choice(valid_characters) for i in range(pwd_length))
+              response['Data'] = {'RandomString': pwd }
+              return send_response(event, response)
+      Runtime: python2.7
+
+  FunctionLogGroup:
+    Type: 'AWS::Logs::LogGroup'
+    DependsOn: GenerateRandomStringFunction
+    Properties:
+      LogGroupName: !Join ['', ['/aws/lambda/', !Ref GenerateRandomStringFunction ]]
+      RetentionInDays: 7
+
+  GenerateRandomString:
+    Type: 'AWS::CloudFormation::CustomResource'
+    DependsOn:
+      - FunctionLogGroup
+    Properties:
+      ParamName: !Ref ParamName
+      Length: 25
+      ServiceToken: !GetAtt GenerateRandomStringFunction.Arn
+
+Outputs:
+
+  GenerateRandomStringFunctionArn:
+    Value: !GetAtt GenerateRandomStringFunction.Arn

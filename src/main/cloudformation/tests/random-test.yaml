@@ -1,0 +1,27 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: 'Random String Generator Test Deployment'
+
+Parameters:
+
+  StackTemplates:
+    Description: Template service base URL
+    Type: String
+    Default: https://s3.us-east-2.amazonaws.com/cfn-stacks.com/templates
+
+Resources:
+
+  RandomGeneratorTemplate:
+    Type: 'AWS::CloudFormation::Stack'
+    Properties:
+        TemplateURL: !Sub ${StackTemplates}/@templatePath@/random.yaml
+
+  GenerateRandomString:
+    Type: 'AWS::CloudFormation::CustomResource'
+    Properties:
+      Length: 50
+      ServiceToken: !GetAtt RandomGeneratorTemplate.Outputs.GenerateRandomStringFunctionArn
+
+Outputs:
+
+  RandomString:
+    Value: !GetAtt GenerateRandomString.RandomString
