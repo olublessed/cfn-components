@@ -1,6 +1,13 @@
 AWSTemplateFormatVersion: 2010-09-09
 Description: 'Random String Generator'
 
+Parameters:
+
+  StringLength:
+    Description: The length of the random string
+    Type: Number
+    Default: 24
+
 Resources:
 
   LambdaExecutionRole:
@@ -65,16 +72,73 @@ Resources:
       LogGroupName: !Join ['', ['/aws/lambda/', !Ref GenerateRandomStringFunction ]]
       RetentionInDays: 7
 
-  GenerateRandomString:
+  GenerateRandomString1:
     Type: 'AWS::CloudFormation::CustomResource'
     DependsOn:
       - FunctionLogGroup
     Properties:
-      ParamName: !Ref ParamName
-      Length: 25
+      Length: !Ref StringLength
+      ServiceToken: !GetAtt GenerateRandomStringFunction.Arn
+
+  GenerateRandomString2:
+    Type: 'AWS::CloudFormation::CustomResource'
+    DependsOn:
+      - FunctionLogGroup
+    Properties:
+      Length: !Ref StringLength
+      ServiceToken: !GetAtt GenerateRandomStringFunction.Arn
+
+  GenerateRandomString3:
+    Type: 'AWS::CloudFormation::CustomResource'
+    DependsOn:
+      - FunctionLogGroup
+    Properties:
+      Length: !Ref StringLength
+      ServiceToken: !GetAtt GenerateRandomStringFunction.Arn
+
+  GenerateRandomString4:
+    Type: 'AWS::CloudFormation::CustomResource'
+    DependsOn:
+      - FunctionLogGroup
+    Properties:
+      Length: !Ref StringLength
+      ServiceToken: !GetAtt GenerateRandomStringFunction.Arn
+
+  GenerateRandomString5:
+    Type: 'AWS::CloudFormation::CustomResource'
+    DependsOn:
+      - FunctionLogGroup
+    Properties:
+      Length: !Ref StringLength
+      ServiceToken: !GetAtt GenerateRandomStringFunction.Arn
+
+  GenerateRandomString6:
+    Type: 'AWS::CloudFormation::CustomResource'
+    DependsOn:
+      - FunctionLogGroup
+    Properties:
+      Length: !Ref StringLength
       ServiceToken: !GetAtt GenerateRandomStringFunction.Arn
 
 Outputs:
+
+  String1:
+    Value: !GetAtt GenerateRandomString1.RandomString
+
+  String2:
+    Value: !GetAtt GenerateRandomString2.RandomString
+
+  String3:
+    Value: !GetAtt GenerateRandomString3.RandomString
+
+  String4:
+    Value: !GetAtt GenerateRandomString4.RandomString
+
+  String5:
+    Value: !GetAtt GenerateRandomString5.RandomString
+
+  String6:
+    Value: !GetAtt GenerateRandomString6.RandomString
 
   GenerateRandomStringFunctionArn:
     Value: !GetAtt GenerateRandomStringFunction.Arn

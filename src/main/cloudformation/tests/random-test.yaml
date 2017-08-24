@@ -15,13 +15,19 @@ Resources:
     Properties:
         TemplateURL: !Sub ${StackTemplates}/@templatePath@/random.yaml
 
+  # Use the function arn to create a local custom resource
   GenerateRandomString:
     Type: 'AWS::CloudFormation::CustomResource'
     Properties:
-      Length: 50
+      Length: 10
       ServiceToken: !GetAtt RandomGeneratorTemplate.Outputs.GenerateRandomStringFunctionArn
 
 Outputs:
 
-  RandomString:
+  # From local resource
+  RandomString1:
     Value: !GetAtt GenerateRandomString.RandomString
+
+  # Using one of the outputs from the template
+  RandomString2:
+    Value: !GetAtt RandomGeneratorTemplate.Outputs.String2

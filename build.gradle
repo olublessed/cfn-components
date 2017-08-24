@@ -1,7 +1,5 @@
-import org.apache.tools.ant.filters.ReplaceTokens
-
 plugins {
-    id 'com.cfnstacks.gradle.artifacts3' version '0.1.8'
+    id 'com.cfnstacks.gradle.artifacts3' version '0.2.1'
 }
 
 group = 'com.cfnstacks'
@@ -17,12 +15,13 @@ ext.params.with {
     profile = setParam('profile', '')
     region = setParam('region', 'us-east-2')
     repo = setParam('repo', 'cfn-stacks.com.s3.us-east-2.amazonaws.com')
-    stackParamSet = setParam('stackParamSet', 'template')
-    template = setParam('template', 'multi-vpc.yaml')
+    stack = setParam('stack', 'cfn-components-test')
+    stackParamSet = setParam('stackParamSet', 'randomTest')
+    template = setParam('template', 'tests/random-test.yaml')
 }
 
 ext.stackParameters = [
-    template: [:] // template only, not launching any stacks
+    randomTest: [:]
 ]
 
 artifacts3 {
@@ -58,19 +57,4 @@ asciidoctor {
             'idseparator': '-',
             'docinfo1': '',
             'projectVersion': project.version
-}
-
-task foo(type: Sync) {
-    from 'src/main/cloudformation'
-    into 'build/cloudformation'
-
-    // When templates need to refer to other templates within the same artifact they
-    // can use the @templatePath@ token which will compute the path
-    String path = "${(project.version.contains('SNAPSHOT')) ? 'snapshot' : 'release'}/${project.group.replace('.', '/')}/${project.version}"
-    println(path)
-    filter(ReplaceTokens, tokens: [
-            artifactId: project.name,
-            version: project.version,
-            templatePath: path
-    ])
 }
